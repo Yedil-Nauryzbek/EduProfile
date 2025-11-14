@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>EduTrack School</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'Segoe UI',Roboto,sans-serif;background:#f0f4fb}
+body{display:flex;flex-direction:column;align-items:center;padding-bottom:80px}
+.top-bar{width:95%;display:flex;justify-content:space-between;align-items:center;margin:1rem 0;font-size:1.2rem;font-weight:600;color:#333}
+.screen{width:95%;max-width:800px;display:none;flex-direction:column;align-items:center;margin-bottom:1.5rem}
+.screen.active{display:flex}
+.gpa-block{background:linear-gradient(135deg,#6a0dad,#9b30ff);width:100%;height:45vh;border-radius:30px;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.5rem;position:relative;box-shadow:0 6px 18px rgba(0,0,0,0.1)}
+.gpa-circle{width:150px;height:150px;border-radius:50%;background:#9b30ff;display:flex;align-items:center;justify-content:center;font-size:3rem;font-weight:700;color:#fff;box-shadow:0 0 20px rgba(0,0,0,0.2);transition: background 0.5s}
+.gpa-label{font-size:1.2rem;margin-top:0.5rem;font-weight:500}
+.gpa-sub{margin-top:6px;color:rgba(255,255,255,0.9)}
+.gpa-role{margin-top:8px;display:flex;gap:12px;color:rgba(255,255,255,0.95);font-size:0.9rem}
+
+/* Древо развития */
+.tree-container{width:100%;background:#fff;border-radius:20px;padding:1rem;margin-top:1rem;box-shadow:0 4px 12px rgba(0,0,0,0.08)}
+.tree-header{font-weight:700;margin-bottom:0.8rem;font-size:1.2rem;color:#333}
+.category{display:flex;align-items:center;gap:.5rem;margin-bottom:10px}
+.category-info{min-width:110px;display:flex;align-items:center;gap:.5rem;font-weight:500;font-size:0.95rem}
+.progress-bar{flex:1;background:#e6e6ee;height:12px;border-radius:8px;overflow:hidden}
+.progress-fill{height:100%;width:0;transition:width 1s linear;background:#6a0dad}
+.score{min-width:40px;text-align:right;font-weight:600;font-size:0.9rem}
+
+/* События */
+.events-section{width:100%;margin-top:1rem}
+.event-card{background:#fff;border-radius:16px;padding:12px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:10px;box-shadow:0 4px 12px rgba(0,0,0,0.06);transition:all 0.3s ease;}
+.event-card:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,0.12);}
+.event-btn{padding:8px 14px;border-radius:12px;border:0;background:#4c3ff5;color:#fff;cursor:pointer;font-weight:600;transition:background 0.3s}
+.event-btn:disabled{background:#28a745;cursor:default}
+
+/* Профиль */
+.profile-card{background:#fff;width:100%;border-radius:20px;padding:1.5rem;box-shadow:0 4px 12px rgba(0,0,0,0.08);display:flex;flex-direction:column;align-items:center;gap:12px}
+.profile-avatar{width:90px;height:90px;border-radius:50%;background:#6a0dad;color:#fff;font-size:2.2rem;display:flex;align-items:center;justify-content:center;font-weight:700}
+.profile-name{font-weight:700;font-size:1.2rem}
+.qr-code{margin-top:10px;width:130px;height:130px;background:#eee;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:0.9rem;color:#666;user-select:none;position:relative}
+.qr-code::after{content:'QR';position:absolute;font-size:1.5rem;font-weight:700;color:#9b30ff}
+
+/* Bottom nav */
+.bottom-nav{position:fixed;bottom:0;left:0;width:100%;display:flex;justify-content:space-around;align-items:center;padding:12px 0;background:#fff;box-shadow:0 -6px 18px rgba(0,0,0,0.06)}
+.bottom-nav div{display:flex;flex-direction:column;align-items:center;cursor:pointer;font-size:0.9rem}
+.bottom-nav .camera-btn{background:#4c3ff5;color:#fff;border-radius:50%;width:50px;height:50px;display:flex;align-items:center;justify-content:center;font-size:1.3rem}
+.bottom-nav span{margin-top:2px}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div>EduTrack School</div>
+  <div>🔔 ⚙️ 👤</div>
+</div>
+
+<!-- Главная -->
+<div class="screen active" id="screen-home">
+  <div class="gpa-block">
+    <div class="gpa-circle" id="gpa-circle">3.2</div>
+    <div class="gpa-label">Social GPA</div>
+    <div class="gpa-sub">+0.2 за месяц</div>
+    <div class="gpa-role">
+      <div>Role: Initiator ⭐</div>
+      <div>До Leader — <span id="leader-points">15</span> баллов</div>
+    </div>
+  </div>
+
+  <div class="tree-container">
+    <div class="tree-header">🌳 Древо развития</div>
+    <div class="category"><div class="category-info">🧠 Разум</div><div class="progress-bar"><div class="progress-fill" id="brain-bar"></div></div><div class="score" id="brain-score">7/10</div></div>
+    <div class="category"><div class="category-info">💪 Тело</div><div class="progress-bar"><div class="progress-fill" id="body-bar"></div></div><div class="score" id="body-score">5/10</div></div>
+    <div class="category"><div class="category-info">🎨 Творчество</div><div class="progress-bar"><div class="progress-fill" id="creativity-bar"></div></div><div class="score" id="creativity-score">8/10</div></div>
+    <div class="category"><div class="category-info">👑 Лидерство</div><div class="progress-bar"><div class="progress-fill" id="leadership-bar"></div></div><div class="score" id="leadership-score">4/10</div></div>
+  </div>
+
+  <div class="events-section">
+    <h2>📅 Ближайшие события</h2>
+    <div class="event-card"><div><div>Экологический субботник</div><div style="font-size:0.85rem;color:#666">Сегодня, 16:00 · Набережная</div><div style="font-size:0.8rem;color:#666">👥 <span id="participants1">12</span> участников</div></div><div><button class="event-btn" onclick="joinEvent('participants1', this)">Участвую</button></div></div>
+    <div class="event-card"><div><div>Конкурс научных проектов</div><div style="font-size:0.85rem;color:#666">20 ноября, 14:00 · Актовый зал</div><div style="font-size:0.8rem;color:#666">👥 <span id="participants2">5</span> участников</div></div><div><button class="event-btn" onclick="joinEvent('participants2', this)">Участвую</button></div></div>
+  </div>
+</div>
+
+<!-- Достижения -->
+<div class="screen" id="screen-achievements">
+  <h2>🏆 Достижения</h2>
+  <div class="events-section">
+    <div class="event-card">💡 Научный проект</div>
+    <div class="event-card">⚽ Турнир по футболу</div>
+    <div class="event-card">🎨 Конкурс рисунков</div>
+  </div>
+</div>
+
+<!-- Команда -->
+<div class="screen" id="screen-team">
+  <h2>👥 Моя команда</h2>
+  <div class="events-section">
+    <div class="event-card">Иван Иванов – лидер</div>
+    <div class="event-card">Мария Петрова – участник</div>
+    <div class="event-card">Алексей Смирнов – участник</div>
+  </div>
+</div>
+
+<!-- Профиль -->
+<div class="screen" id="screen-profile">
+  <div class="profile-card">
+    <div class="profile-avatar">А</div>
+    <div class="profile-name">Алексей</div>
+    <div class="qr-code" id="qr-code"></div>
+  </div>
+</div>
+
+<!-- Bottom nav -->
+<div class="bottom-nav">
+  <div onclick="showScreen('screen-home')">🏠<span>Главная</span></div>
+  <div onclick="showScreen('screen-achievements')">📊<span>Достижения</span></div>
+  <div class="camera-btn">📷</div>
+  <div onclick="showScreen('screen-team')">👥<span>Команда</span></div>
+  <div onclick="showScreen('screen-profile')">👤<span>Профиль</span></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+// Переключение экранов
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// Древо
+function setCategory(id,value){
+  document.getElementById(id+'-bar').style.width=(value*10)+'%';
+  document.getElementById(id+'-score').textContent=value+'/10';
+}
+
+// GPA
+function setGPA(value){
+  const c = document.getElementById('gpa-circle');
+  c.textContent=value.toFixed(1);
+  c.style.background = value<2?'#ff4d4f':(value<3.5?'#ffb400':'#6a0dad');
+}
+
+// События
+function joinEvent(id,btn){
+  const el=document.getElementById(id);
+  el.textContent=parseInt(el.textContent)+1;
+  btn.textContent='✅ Записан';
+  btn.disabled=true;
+  btn.style.background='#28a745';
+}
+
+// Инициализация
+setGPA(3.2);
+setCategory('brain',7);setCategory('body',5);setCategory('creativity',8);setCategory('leadership',4);
+
+// QR-код профиля
+new QRCode(document.getElementById("qr-code"), {
+  text: "https://edutrack.school/profile/alexey",
+  width: 120,
+  height: 120,
+  colorDark : "#6a0dad",
+  colorLight : "#f0f4fb",
+  correctLevel : QRCode.CorrectLevel.H
+});
+</script>
+</body>
+</html>
